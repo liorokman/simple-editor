@@ -7,7 +7,7 @@ from tkinter.scrolledtext import ScrolledText
 from tkinter.filedialog import askopenfilename as openfile, asksaveasfile as savefile
 from platform import system
 
-if platform.system() == "Windows":
+if system() == "Windows":
   from ctypes import windll
   windll.user32.ShowWindow(windll.kernel32.GetConsoleWindow(), 0)
 
@@ -71,6 +71,8 @@ def change_font():
 def change_font_size():
     global font_size
     new_size = askint("Font", "What's the new font size?")
+    if new_size == None:
+        return
     if askyesno("Question", f"Do you want to make font size {new_size} to default?"):
         with open("font.txt", "w") as f:
             f.write(font + "\n" + str(new_size) + "\n" + font_color)
