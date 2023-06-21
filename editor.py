@@ -5,8 +5,11 @@ from tkinter.colorchooser import askcolor
 from tkinter.simpledialog import askstring, askinteger as askint
 from tkinter.scrolledtext import ScrolledText
 from tkinter.filedialog import askopenfilename as openfile, asksaveasfile as savefile
-from ctypes import windll
-windll.user32.ShowWindow(windll.kernel32.GetConsoleWindow(), 0)
+from platform import system
+
+if platform.system() == "Windows":
+  from ctypes import windll
+  windll.user32.ShowWindow(windll.kernel32.GetConsoleWindow(), 0)
 
 try:
     f = open("font.txt")
