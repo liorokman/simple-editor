@@ -1,4 +1,5 @@
 #!/usr/bin/python3
+import yaml
 from tkinter import *
 from tkinter.messagebox import askyesno, askyesnocancel
 from tkinter.colorchooser import askcolor
@@ -11,21 +12,51 @@ if system() == "Windows":
   from ctypes import windll
   windll.user32.ShowWindow(windll.kernel32.GetConsoleWindow(), 0)
 
-try:
-    f = open("font.txt")
-except FileNotFoundError:
-    f = open("font.txt", 'w')
-    f.write("Courier New\n10\n#000000")
-    f.close()
-    f = open("font.txt")
-font_properties = f.readlines()
-f.close()
-font = font_properties[0].strip()
-font_size = font_properties[1].strip()
-font_color = font_properties[2].strip()
+# Constants for the configuration file
+FONT_SECTION = "font"
+FONT_NAME = "name"
+FONT_SIZE = "size"
+FONT_COLOR = "color"
+
+# Global state variables
 file_opened = None
 is_file_saved = True
 
+
+def load_config():
+   global font , font_size , font_color
+   try:
+      with open("config.yaml") as conf:
+          config = yaml.safe_load(conf)
+   except FileNotFoundError:
+       config = {}
+
+   if FONT_SECTION not in config  or \
+      FONT_NAME not in config[FONT_SECTION] or \
+      FONT_SIZE  not in config[FONT_SECTION] or \
+      FONT_COLOR not in config[FONT_SECTION]:
+         config = {
+           FONT_SECTION: {
+               FONT_NAME: "Courier New",
+               FONT_SIZE: 10,
+               FONT_COLOR: "#000000"
+           }
+         }
+   font = config[FONT_SECTION][FONT_NAME]
+   font_size = config[FONT_SECTION][FONT_SIZE]
+   font_color = config[FONT_SECTION][FONT_COLOR]
+
+def save_config():
+   global font, font_size, font_color
+   config= {
+      FONT_SECTION: {
+          FONT_NAME: font,
+          FONT_SIZE: font_size,
+          FONT_COLOR: font_color
+      }
+   }
+   with open("config.yaml", "w") as conf_file:
+      yaml.dump(config, conf_file)
 
 def save_as():
     global file_opened, is_file_saved
@@ -62,10 +93,9 @@ def change_font():
     global font
     new_font = askstring("Font", "What's the new font?")
     if askyesno("Question", "Do you want to determine the font " + new_font + " to default?"):
-        with open("font.txt", "w") as f:
-            f.write(new_font + "\n" + str(font_size) + "\n" + font_color)
-    txt.config(font=(new_font, font_size))
-    font = new_font
+        font = new_font
+        save_config()
+        txt.config(font=(new_font, font_size))
 
 
 def change_font_size():
@@ -74,30 +104,27 @@ def change_font_size():
     if new_size == None:
         return
     if askyesno("Question", f"Do you want to make font size {new_size} to default?"):
-        with open("font.txt", "w") as f:
-            f.write(font + "\n" + str(new_size) + "\n" + font_color)
-    txt.config(font=(font, new_size))
-    font_size = new_size
+        font_size = new_size
+        save_config()
+        txt.config(font=(font, new_size))
 
 
 def change_color():
     global font_color
-    new_color = askcolor(title="Color")[1]
+    new_color = askcolor(title="Color", color=font_color)[1]
     if askyesno("Question", f"Do you want to make font color {new_color} to default?"):
-        with open("font.txt", 'w') as f:
-            f.write(font + "\n" + str(font_size) + "\n" + new_color)
-    txt.config(fg=new_color)
-    font_color = new_color
+        font_color = new_color
+        save_config()
+        txt.config(fg=new_color)
 
 
 def back_default():
     global font, font_size, font_color
-    with open("font.txt", "w") as f:
-        f.write("Courier New\n10\n#000000")
-    txt.config(font=("Courier New", 10), fg="#000000")
     font_color = "#000000"
     font = "Courier New"
     font_size = 10
+    save_config()
+    txt.config(font=(font, font_size), fg=font_color)
 
 
 def unsaved():
@@ -119,6 +146,7 @@ def exit_from_root():
 
 
 def main(text=""):
+    load_config()
     global is_file_saved, txt, root, statusbar
     root = Tk()
     root.title("Text Editor")
