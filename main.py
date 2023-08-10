@@ -245,29 +245,11 @@ def next():
     root.mainloop()
 
 
-def text():
-    global extension
-    extension = ".txt"
-    next()
-
-
-def md():
-    global extension, pattern
-    extension = ".md"
-    pattern = "# "
-    next()
-
-
-def py():
-    global extension
-    extension = ".py"
-    next()
-
-
-def html():
-    global extension, pattern
-    extension = ".html"
-    pattern = """<!DOCTYPE html>
+supportedFiles = {
+        "txt": { "displayName": "Normal text file (.txt)", "pattern": ""},
+        "md": { "displayName": "Markdown file .(md)", "pattern": "# "},
+        "py": { "displayName": "Python file (.py)", "pattern": ""},
+        "html": {"displayName": "HTML File (.html)", "pattern": """<!DOCTYPE html>
 <html>
     <head>
         <title></title>
@@ -279,46 +261,18 @@ def html():
     <body>
         
     </body>
-</html>"""
-    next()
+</html> """},
+        "css": {"displayName": "CSS file (.css)", "pattern": "body {\n\n}"},
+        "js": {"displayName": "JavaScript file (.js)", "pattern": ""},
+        "java": {"displayName": "Java file (.java)", "pattern": ""},
+        "c": {"displayName": "C file (.c)", "pattern": """#include <stdio.h>
+#include <stdlib.h>
 
-
-def css():
-    global extension, pattern
-    extension = ".css"
-    pattern = """body {
-    
-}"""
-    next()
-
-
-def js():
-    global extension
-    extension = ".js"
-    next()
-
-
-def java():
-    global extension
-    extension = ".java"
-    next()
-
-
-def c():
-    global extension, pattern
-    extension = ".c"
-    pattern = """#include <stdio.h>
 int main()
 {
-    
-}"""
-    next()
-
-
-def cs():
-    global extension, pattern
-    extension = ".cs"
-    pattern = """namespace
+   return EXIT_SUCCESS;
+}"""},
+        "cs": {"displayName": "C# file (.cs)", "pattern": """namespace
 {
     public partial class Program
     {
@@ -327,21 +281,25 @@ def cs():
             
         }
     }
-}"""
-    next()
+}"""},
+        "cpp": {"displayName": "C++ file (.cpp)", "pattern": """#include <iostream>
+#include <cstdlib>
 
-
-def cpp():
-    global extension, pattern
-    extension = ".cpp"
-    pattern = """#include <iostream>
 using namespace std;
 int main()
 {
-    
-}"""
+ 
+   return EXIT_SUCCESS;
+}"""}
+}
+
+def createFileContent(fileType):
+    global extension, pattern
+    extension = "." + fileType
+    pattern = supportedFiles[fileType]["pattern"]
     next()
 
+    
 
 def main():
     global is_file_saved, txt, root, statusbar, encoding, startroot
@@ -353,26 +311,11 @@ def main():
         startroot.iconbitmap("icon.ico")
     else:
         startroot.iconbitmap("@icon.xbm")
-    textfile = Button(startroot, text="Normal text file (.txt)", command=text)
-    markdownfile = Button(startroot, text="Markdown file (.md)", command=md)
-    pythonfile = Button(startroot, text="Python file (.py)", command=py)
-    htmlfile = Button(startroot, text="HTML File (.html)", command=html)
-    cssfile = Button(startroot, text="CSS file (.css)", command=css)
-    javascriptfile = Button(startroot, text="JavaScript file (.js)", command=js)
-    javafile = Button(startroot, text="Java file (.java)", command=java)
-    cfile = Button(startroot, text="C file (.c)", command=c)
-    csfile = Button(startroot, text="C# file (.cs)", command=cs)
-    cppfile = Button(startroot, text="C++ file (.cpp)", command=cpp)
-    textfile.pack()
-    markdownfile.pack()
-    pythonfile.pack()
-    htmlfile.pack()
-    cssfile.pack()
-    javascriptfile.pack()
-    javafile.pack()
-    cfile.pack()
-    csfile.pack()
-    cppfile.pack()
+
+    for fileType in supportedFiles:
+        btn = Button(startroot, text=supportedFiles[fileType]["displayName"], command=lambda ext=fileType: createFileContent(ext))
+        btn.pack()
+
     root.title("Text Editor")
     root.geometry("500x500")
     if system() == "Windows":
